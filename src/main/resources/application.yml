@@ -1,0 +1,33 @@
+spring:
+  # mysql
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/jwt
+    username: my
+    password: 123456789
+    # hikaricp
+    # The default value of mysql wait_timeout is 28800 (8 hours).
+    # If it is burdensome to set wait_timeout directly in mysql, set it as a session in properties.
+    hikari:
+      connection-init-sql: set wait_timeout = 610
+      max-lifetime: 600000
+  # jpa
+  jpa:
+    defer-datasource-initialization: false
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    hibernate:
+      ddl-auto: none
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+  data:
+    # redis
+    redis:
+      host: localhost
+      port: 6379
+
+# jwt
+jwt:
+  secret: c3ByaW5nLWJvb3Qtc2VjdXJpdHktand0LXR1dG9yaWFsLWppd29vbi1zcHJpbmctYm9vdC1zZWN1cml0eS1qd3QtdHV0b3JpYWwK
