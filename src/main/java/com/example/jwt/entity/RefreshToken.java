@@ -1,5 +1,6 @@
 package com.example.jwt.entity;
 
+import com.example.jwt.config.jwt.TokenProvider;
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,23 +13,22 @@ import org.springframework.data.redis.core.TimeToLive;
  * @since 2023/02/23
  */
 @Getter
-@RedisHash("refresh_token")
+@RedisHash(value = "refresh_token", timeToLive = 60L)
 @AllArgsConstructor
 @Builder
 public class RefreshToken {
     @Id
-    private Long id;
+    private String id;
 
     private String refreshToken;
 
     @TimeToLive
     private Long expiration;
 
-    public static RefreshToken createRefreshToken(long memberId, String refreshToken, Long remainingMilliSeconds) {
+    public static RefreshToken createRefreshToken(String email, String refreshToken) {
         return RefreshToken.builder()
-                .id(memberId)
+                .id(email)
                 .refreshToken(refreshToken)
-                .expiration(remainingMilliSeconds / 1000)
                 .build();
     }
 }

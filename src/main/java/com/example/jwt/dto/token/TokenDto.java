@@ -13,9 +13,6 @@ import lombok.*;
 @ToString
 @Builder
 public class TokenDto {
-    private String grantType;
     private String accessToken;
-    private Long accessTokenExpiresIn;
     private String refreshToken;
-    private Long refreshTokenExpireTime;
 }

@@ -5,7 +5,6 @@ import com.example.jwt.config.exception.ErrorCode;
 import com.example.jwt.entity.Member;
 import com.example.jwt.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -32,12 +31,8 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     // DB에 User 값이 존재한다면 UserDetails 객체로 만들어서 반환
     private UserDetails createUserDetails(Member member) {
-        GrantedAuthority grantedAuthority = new SimpleGrantedAuthority(member.getAuthority().toString());
+        SimpleGrantedAuthority grantedAuthority = new SimpleGrantedAuthority(member.getAuthority().toString());
 
-        return new User(
-                String.valueOf(member.getMemberId()),
-                member.getPassword(),
-                Collections.singleton(grantedAuthority)
-        );
+        return new User(member.getEmail(), member.getPassword(), Collections.singleton(grantedAuthority));
     }
 }

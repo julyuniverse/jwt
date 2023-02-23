@@ -23,7 +23,9 @@ public class AuthController {
 
     @PostMapping("/signup")
     ResponseEntity<TokenDto> signup(@RequestBody SignupRequest signupRequest) {
-        return ResponseEntity.ok(authService.signup(signupRequest));
+        authService.signup(signupRequest);
+
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/login")
