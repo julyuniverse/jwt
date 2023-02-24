@@ -1,7 +1,6 @@
 package com.example.jwt.entity;
 
 import jakarta.persistence.*;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicInsert;
@@ -14,14 +13,14 @@ import org.hibernate.annotations.DynamicUpdate;
 @Data
 @Entity
 @NoArgsConstructor
-@Table(name = "member")
+@Table(name = "account")
 @DynamicInsert // insert 시 null인 필드 제외
 @DynamicUpdate // update 시 null인 필드 제외
-public class Member {
+public class Account {
     @Id
-    @Column(name = "member_id")
+    @Column(name = "account_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long memberId;
+    private Long accountId;
     private String email;
     private String password;
     @Enumerated(EnumType.STRING)

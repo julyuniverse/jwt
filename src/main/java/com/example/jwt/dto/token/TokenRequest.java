@@ -1,18 +1,15 @@
 package com.example.jwt.dto.token;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 /**
  * @author Lee Taesung
- * @since 2023/02/23
+ * @since 2023/02/24
  */
 @Getter
-@Setter
 @NoArgsConstructor
-@AllArgsConstructor
-@ToString
-@Builder
-public class TokenDto {
+public class TokenRequest {
     private String accessToken;
     private String refreshToken;
 }

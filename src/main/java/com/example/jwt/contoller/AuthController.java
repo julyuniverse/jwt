@@ -1,8 +1,10 @@
 package com.example.jwt.contoller;
 
 import com.example.jwt.dto.auth.LoginRequest;
+import com.example.jwt.dto.auth.LoginResponse;
 import com.example.jwt.dto.auth.SignupRequest;
-import com.example.jwt.dto.token.TokenDto;
+import com.example.jwt.dto.token.Token;
+import com.example.jwt.dto.token.TokenRequest;
 import com.example.jwt.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,14 +24,19 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/signup")
-    ResponseEntity<TokenDto> signup(@RequestBody SignupRequest signupRequest) {
+    public ResponseEntity<Void> signup(@RequestBody SignupRequest signupRequest) {
         authService.signup(signupRequest);
 
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/login")
-    ResponseEntity<TokenDto> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
         return ResponseEntity.ok(authService.login(loginRequest));
+    }
+
+    @PostMapping("/reissue")
+    public ResponseEntity<Token> reissue(@RequestBody TokenRequest tokenRequest) {
+        return ResponseEntity.ok(authService.reissue(tokenRequest));
     }
 }

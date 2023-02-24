@@ -15,8 +15,15 @@ import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 public enum ErrorCode {
     DUPLICATE_ID(UNAUTHORIZED, "Duplicate ID."),
     WRONG_PASSWORD(UNAUTHORIZED, "Wrong password."),
+    ACCOUNT_NOT_FOUND(UNAUTHORIZED, "Account not found."),
+    INVALID_JWT_SIGNATURE(UNAUTHORIZED, "Invalid JWT signature."),
+    EXPIRED_JWT(UNAUTHORIZED, "Expired JWT."),
+    UNSUPPORTED_JWT(UNAUTHORIZED, "Unsupported JWT."),
+    INVALID_JWT(UNAUTHORIZED, "Invalid JWT."),
+    JWT_WITHOUT_AUTHORITY_INFO(UNAUTHORIZED, "JWT without authority information."),
+    UNMATCHED_JWT(UNAUTHORIZED, "Unmatched JWT."),
+    LOGGED_OUT_ACCOUNT(UNAUTHORIZED, "Logged out account."),
 
-    NOT_FOUND_IN_DB(UNAUTHORIZED, "Not found in database."),
     ;
 
     private final HttpStatus httpStatus;

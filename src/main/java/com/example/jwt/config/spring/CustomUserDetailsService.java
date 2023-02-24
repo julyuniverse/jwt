@@ -2,8 +2,8 @@ package com.example.jwt.config.spring;
 
 import com.example.jwt.config.exception.CustomException;
 import com.example.jwt.config.exception.ErrorCode;
-import com.example.jwt.entity.Member;
-import com.example.jwt.repository.MemberRepository;
+import com.example.jwt.entity.Account;
+import com.example.jwt.repository.AccountRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -20,19 +20,19 @@ import java.util.Collections;
 @Service
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
-    private final MemberRepository memberRepository;
+    private final AccountRepository accountRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) {
-        return memberRepository.findByEmail(username)
+        return accountRepository.findByEmail(username)
                 .map(this::createUserDetails)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_IN_DB));
+                .orElseThrow(() -> new CustomException(ErrorCode.ACCOUNT_NOT_FOUND));
     }
 
-    // DB에 User 값이 존재한다면 UserDetails 객체로 만들어서 반환
-    private UserDetails createUserDetails(Member member) {
-        SimpleGrantedAuthority grantedAuthority = new SimpleGrantedAuthority(member.getAuthority().toString());
+    // DB에 account 값이 존재한다면 UserDetails 객체로 만들어서 반환
+    private UserDetails createUserDetails(Account account) {
+        SimpleGrantedAuthority grantedAuthority = new SimpleGrantedAuthority(account.getAuthority().toString());
 
-        return new User(member.getEmail(), member.getPassword(), Collections.singleton(grantedAuthority));
+        return new User(account.getEmail(), account.getPassword(), Collections.singleton(grantedAuthority));
     }
 }

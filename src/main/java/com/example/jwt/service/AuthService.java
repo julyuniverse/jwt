@@ -2,17 +2,18 @@ package com.example.jwt.service;
 
 import com.example.jwt.config.exception.CustomException;
 import com.example.jwt.config.exception.ErrorCode;
-import com.example.jwt.config.jwt.TokenProvider;
+import com.example.jwt.config.jwt.JwtProvider;
 import com.example.jwt.dto.auth.LoginRequest;
+import com.example.jwt.dto.auth.LoginResponse;
 import com.example.jwt.dto.auth.SignupRequest;
-import com.example.jwt.dto.token.TokenDto;
+import com.example.jwt.dto.token.Token;
+import com.example.jwt.dto.token.TokenRequest;
+import com.example.jwt.entity.Account;
 import com.example.jwt.entity.Authority;
-import com.example.jwt.entity.Member;
-import com.example.jwt.entity.RefreshToken;
-import com.example.jwt.repository.MemberRepository;
-import com.example.jwt.repository.RefreshTokenRepository;
-import io.jsonwebtoken.Jwts;
+import com.example.jwt.repository.AccountRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
@@ -20,7 +21,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Lee Taesung
@@ -29,28 +31,32 @@ import java.util.Date;
 @Service
 @RequiredArgsConstructor
 public class AuthService {
-    private final MemberRepository memberRepository;
+    private final AccountRepository accountRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
-    private final TokenProvider tokenProvider;
-    private final RefreshTokenRepository refreshTokenRepository;
+    private final JwtProvider jwtProvider;
+    private final AccountService accountService;
+    private final RedisTemplate<String, String> redisTemplate;
+    @Value("${jwt.ttl.refresh-token}")
+    private Long refreshTokenTtl;
 
     @Transactional
     public void signup(SignupRequest signupRequest) {
-        if (memberRepository.existsByEmail(signupRequest.getEmail())) {
+        if (accountRepository.existsByEmail(signupRequest.getEmail())) {
             throw new CustomException(ErrorCode.DUPLICATE_ID); // 아이디 중복
         }
 
-        Member member = new Member();
-        member.setEmail(signupRequest.getEmail());
-        member.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
-        member.setAuthority(Authority.ROLE_USER);
-        memberRepository.save(member);
+        Account account = new Account();
+        account.setEmail(signupRequest.getEmail());
+        account.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
+        account.setAuthority(Authority.ROLE_USER);
+        accountRepository.save(account);
     }
 
-    public TokenDto login(LoginRequest loginRequest) {
-        Member member = memberRepository.findByEmail(loginRequest.getEmail()).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_IN_DB));
-        checkPassword(loginRequest.getPassword(), member.getPassword());
+    @Transactional
+    public LoginResponse login(LoginRequest loginRequest) {
+        Account account = accountService.findByEmail(loginRequest.getEmail());
+        checkPassword(loginRequest.getPassword(), account.getPassword());
 
         // access token, refresh token 생성
         // 1. ID(email), password 기반 AuthenticationToken 생성
@@ -61,20 +67,68 @@ public class AuthService {
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
 
         // 3. 인증 정보를 기반으로 JWT 토큰 생성
-        String accessToken = tokenProvider.createAccessToken(authentication);
-        String refreshToken = tokenProvider.createRefreshToken(authentication);
-        TokenDto tokenDto = new TokenDto(accessToken, refreshToken);
+        String accessToken = jwtProvider.createAccessToken(authentication);
+        String refreshToken = jwtProvider.createRefreshToken(authentication);
+        Token token = new Token(accessToken, refreshToken);
 
-        // 4. refresh token 생성
-        refreshTokenRepository.save(RefreshToken.createRefreshToken(member.getEmail(), tokenDto.getRefreshToken()));
+        // 4. redis에 refresh token 생성
+        redisTemplate.opsForValue().set(
+                account.getEmail(),
+                token.getRefreshToken(),
+                refreshTokenTtl,
+                TimeUnit.MILLISECONDS
+        );
 
-        // 5. 토큰 발급
-        return tokenDto;
+        // 5. account 셋팅
+        com.example.jwt.dto.account.Account accountResponse = accountService.setAccountResponse(account);
+
+        return LoginResponse.builder()
+                .account(accountResponse)
+                .token(token)
+                .build();
     }
 
     private void checkPassword(String rawPassword, String encodedPassword) {
         if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
             throw new CustomException(ErrorCode.WRONG_PASSWORD);
         }
+    }
+
+    public Token reissue(TokenRequest tokenRequest) {
+        // 1. Refresh Token 검증
+        if (!jwtProvider.validateToken(tokenRequest.getRefreshToken())) {
+            throw new CustomException(ErrorCode.INVALID_JWT);
+        }
+
+        // 2. Access Token에서 ID(email) 가져오기
+        Authentication authentication = jwtProvider.getAuthentication(tokenRequest.getAccessToken());
+
+        // 3. redis에서 email 기반으로 Refresh Token 값 가져오기
+        String refreshToken = redisTemplate.opsForValue().get(authentication.getName());
+
+        // 4. 유무 체크
+        if (refreshToken == null) {
+            throw new CustomException(ErrorCode.LOGGED_OUT_ACCOUNT);
+        }
+
+        // 매칭 체크
+        if (!Objects.equals(refreshToken, tokenRequest.getRefreshToken())) {
+            throw new CustomException(ErrorCode.UNMATCHED_JWT);
+        }
+
+        // 5. 새로운 토큰 생성
+        String newAccessToken = jwtProvider.createAccessToken(authentication);
+        String newRefreshToken = jwtProvider.createRefreshToken(authentication);
+        Token token = new Token(newAccessToken, newRefreshToken);
+
+        // 6. redis에 refresh token 업데이트
+        redisTemplate.opsForValue().set(
+                authentication.getName(),
+                token.getRefreshToken(),
+                refreshTokenTtl,
+                TimeUnit.MILLISECONDS
+        );
+
+        return token;
     }
 }
