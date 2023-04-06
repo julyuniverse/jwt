@@ -11,14 +11,9 @@ import lombok.*;
 @Getter
 @Setter
 @NoArgsConstructor
-@ToString
+@AllArgsConstructor
+@Builder
 public class LoginResponse {
     private Account account;
     private Token token;
-
-    @Builder
-    public LoginResponse(Account account, Token token) {
-        this.account = account;
-        this.token = token;
-    }
 }

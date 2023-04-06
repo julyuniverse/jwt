@@ -9,7 +9,9 @@
 ## 프로젝트 형태
 - Project: Gradle Project
 - Language: Java 17
-- Spring Boot: 3.0.2
+- Spring Boot: 3.x
 - Packaging: Jar
 
 ## Update log
+> 2023-04-07
+- 스프링 시큐리티에 설정한 필터에 예외 처리 구현

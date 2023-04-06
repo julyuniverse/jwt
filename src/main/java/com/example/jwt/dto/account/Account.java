@@ -9,16 +9,10 @@ import lombok.*;
 @Getter
 @Setter
 @NoArgsConstructor
-@ToString
+@AllArgsConstructor
+@Builder
 public class Account {
     private Long accountId;
     private String email;
     private String role;
-
-    @Builder
-    public Account(Long accountId, String email, String role) {
-        this.accountId = accountId;
-        this.email = email;
-        this.role = role;
-    }
 }

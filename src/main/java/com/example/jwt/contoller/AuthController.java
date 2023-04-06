@@ -7,6 +7,7 @@ import com.example.jwt.dto.token.Token;
 import com.example.jwt.dto.token.TokenRequest;
 import com.example.jwt.service.AuthService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,7 +28,7 @@ public class AuthController {
     public ResponseEntity<Void> signup(@RequestBody SignupRequest signupRequest) {
         authService.signup(signupRequest);
 
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.status(HttpStatusCode.valueOf(201)).build();
     }
 
     @PostMapping("/login")
@@ -35,7 +36,7 @@ public class AuthController {
         return ResponseEntity.ok(authService.login(loginRequest));
     }
 
-    @PostMapping("/reissue")
+    @PostMapping("/token/reissue")
     public ResponseEntity<Token> reissue(@RequestBody TokenRequest tokenRequest) {
         return ResponseEntity.ok(authService.reissue(tokenRequest));
     }

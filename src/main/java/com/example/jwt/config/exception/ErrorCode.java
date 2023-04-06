@@ -13,6 +13,7 @@ import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 @AllArgsConstructor
 @Getter
 public enum ErrorCode {
+    FAILED(UNAUTHORIZED, "Failed."),
     DUPLICATE_ID(UNAUTHORIZED, "Duplicate ID."),
     WRONG_PASSWORD(UNAUTHORIZED, "Wrong password."),
     ACCOUNT_NOT_FOUND(UNAUTHORIZED, "Account not found."),
@@ -23,7 +24,6 @@ public enum ErrorCode {
     JWT_WITHOUT_AUTHORITY_INFO(UNAUTHORIZED, "JWT without authority information."),
     UNMATCHED_JWT(UNAUTHORIZED, "Unmatched JWT."),
     LOGGED_OUT_ACCOUNT(UNAUTHORIZED, "Logged out account."),
-
     ;
 
     private final HttpStatus httpStatus;
