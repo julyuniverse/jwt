@@ -66,25 +66,29 @@ public class JwtProvider {
     }
 
     public boolean validateToken(String token) {
-        try {
-            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+//        try {
+//            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+//
+//            return true;
+//        } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
+//            log.info("잘못된 JWT 서명이에요.");
+////            throw new CustomException(ErrorCode.INVALID_JWT_SIGNATURE);
+//        } catch (ExpiredJwtException e) {
+//            log.info("ddd만료된 JWT에요.");
+////            throw new CustomException(ErrorCode.EXPIRED_JWT);
+//        } catch (UnsupportedJwtException e) {
+//            log.info("지원되지 않는 JWT에요.");
+////            throw new CustomException(ErrorCode.UNSUPPORTED_JWT);
+//        } catch (IllegalArgumentException e) {
+//            log.info("잘못된 JWT에요.");
+////            throw new CustomException(ErrorCode.INVALID_JWT);
+//        }
+//
+//        return false;
 
-            return true;
-        } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
-            log.info("잘못된 JWT 서명이에요.");
-//            throw new CustomException(ErrorCode.INVALID_JWT_SIGNATURE);
-        } catch (ExpiredJwtException e) {
-            log.info("만료된 JWT에요.");
-//            throw new CustomException(ErrorCode.EXPIRED_JWT);
-        } catch (UnsupportedJwtException e) {
-            log.info("지원되지 않는 JWT에요.");
-//            throw new CustomException(ErrorCode.UNSUPPORTED_JWT);
-        } catch (IllegalArgumentException e) {
-            log.info("잘못된 JWT에요.");
-//            throw new CustomException(ErrorCode.INVALID_JWT);
-        }
+        Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
 
-        return false;
+        return true;
     }
 
     public Authentication getAuthentication(String accessToken) {

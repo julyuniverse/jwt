@@ -11,15 +11,21 @@ import com.example.jwt.dto.token.TokenRequest;
 import com.example.jwt.entity.Account;
 import com.example.jwt.entity.Authority;
 import com.example.jwt.repository.AccountRepository;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -30,6 +36,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthService {
     private final AccountRepository accountRepository;
     private final PasswordEncoder passwordEncoder;
@@ -101,7 +108,19 @@ public class AuthService {
 
     public Token reissue(TokenRequest tokenRequest) {
         // 1. Refresh Token 검증
-        if (!jwtProvider.validateToken(tokenRequest.getRefreshToken())) {
+        try {
+            jwtProvider.validateToken(tokenRequest.getRefreshToken());
+        } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
+            log.info("잘못된 JWT 서명이에요.");
+            throw new CustomException(ErrorCode.INVALID_JWT_SIGNATURE);
+        } catch (ExpiredJwtException e) {
+            log.info("만료된 JWT에요.");
+            throw new CustomException(ErrorCode.EXPIRED_JWT);
+        } catch (UnsupportedJwtException e) {
+            log.info("지원되지 않는 JWT에요.");
+            throw new CustomException(ErrorCode.UNSUPPORTED_JWT);
+        } catch (IllegalArgumentException e) {
+            log.info("잘못된 JWT에요.");
             throw new CustomException(ErrorCode.INVALID_JWT);
         }
 

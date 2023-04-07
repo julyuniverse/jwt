@@ -19,6 +19,7 @@ public class JwtSecurityConfig extends SecurityConfigurerAdapter<DefaultSecurity
     @Override
     public void configure(HttpSecurity http) {
         JwtFilter customFilter = new JwtFilter(jwtProvider);
+
         // customFilter가 UsernamePasswordAuthenticationFilter보다 먼저 실행되도록 설정
         http.addFilterBefore(customFilter, UsernamePasswordAuthenticationFilter.class);
     }

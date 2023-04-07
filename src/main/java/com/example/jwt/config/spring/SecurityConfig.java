@@ -45,9 +45,9 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
-                // CSRF, CORS disable
+                // csrf, httpBasic disable
                 .csrf().disable()
-                .cors().disable()
+                .httpBasic().disable()
 
                 // exception handling 할 때 직접 만든 클래스를 추가
                 .exceptionHandling(exception -> exception
