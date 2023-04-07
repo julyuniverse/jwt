@@ -34,9 +34,9 @@ import java.util.concurrent.TimeUnit;
  * @author Lee Taesung
  * @since 2023/02/23
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class AuthService {
     private final AccountRepository accountRepository;
     private final PasswordEncoder passwordEncoder;
