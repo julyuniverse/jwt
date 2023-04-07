@@ -106,7 +106,7 @@ public class AuthService {
         }
     }
 
-    public Token reissue(TokenRequest tokenRequest) {
+    public Token reissueToken(TokenRequest tokenRequest) {
         // 1. Refresh Token 검증
         try {
             jwtProvider.validateToken(tokenRequest.getRefreshToken());
